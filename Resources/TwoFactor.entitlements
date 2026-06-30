@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Sandbox: confines the app and gives it a private Keychain group. -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <!-- Needed for the open/save panels used by backup import/export. -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <!-- No network entitlement on purpose: the app makes no network calls. -->
+</dict>
+</plist>
