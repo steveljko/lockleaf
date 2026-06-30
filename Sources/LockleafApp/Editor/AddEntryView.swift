@@ -5,11 +5,11 @@ import SwiftUI
 import TOTPCore
 import UniformTypeIdentifiers
 
-/// Add-account sheet with three import paths: QR image, otpauth URI, and manual
-/// entry. All paths converge on `Library.addEntry`.
+/// Add-account sheet with four import paths: QR image, otpauth URI, a text file
+/// of otpauth links, and manual entry. All paths converge on `Library.addEntry`.
 struct AddEntryView: View {
     enum Mode: String, CaseIterable, Identifiable {
-        case qr = "Scan QR", uri = "Paste Link", manual = "Manual"
+        case qr = "Scan QR", uri = "Paste Link", file = "Import File", manual = "Manual"
         var id: String { rawValue }
     }
 
@@ -29,6 +29,7 @@ struct AddEntryView: View {
                     switch mode {
                     case .qr: QRImportPane(onParsed: add, onError: show)
                     case .uri: URIImportPane(onParsed: add, onError: show)
+                    case .file: FileImportPane(onParsed: addMany, onError: show)
                     case .manual: ManualEntryPane(onSave: addManual, onError: show)
                     }
                 }
@@ -63,6 +64,18 @@ struct AddEntryView: View {
             model.selectedEntryID = entry.id
             dismiss()
         } catch { show((error as? AppError)?.userMessage ?? error.localizedDescription) }
+    }
+
+    /// Import a batch of parsed links (from a file), adding every valid one.
+    private func addMany(_ uris: [OTPAuthURI]) {
+        let groupID = model.settings.settings.defaultGroupID
+        var lastID: EntryID?
+        for uri in uris {
+            if let entry = try? library.addEntry(from: uri, groupID: groupID) { lastID = entry.id }
+        }
+        guard let lastID else { show("Couldn't import any entries from that file."); return }
+        model.selectedEntryID = lastID
+        dismiss()
     }
 
     private func addManual(_ draft: ManualDraft) {
@@ -166,5 +179,63 @@ private struct URIImportPane: View {
             .buttonStyle(.borderedProminent)
             .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
+    }
+}
+
+// MARK: - File pane
+
+/// Imports one or more `otpauth://` links from a text file — the usual way to
+/// migrate accounts exported from another authenticator.
+private struct FileImportPane: View {
+    let onParsed: ([OTPAuthURI]) -> Void
+    let onError: (String) -> Void
+    @State private var isTargeted = false
+
+    var body: some View {
+        VStack(spacing: 16) {
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
+                .foregroundStyle(isTargeted ? Color.accentColor : Color.secondary.opacity(0.5))
+                .frame(height: 220)
+                .overlay {
+                    VStack(spacing: 10) {
+                        Image(systemName: "doc.text").font(.system(size: 44)).foregroundStyle(.secondary)
+                        Text("Drag a text file of otpauth:// links here").foregroundStyle(.secondary)
+                    }
+                }
+                .background(isTargeted ? Color.accentColor.opacity(0.06) : .clear)
+                .dropDestination(for: URL.self) { urls, _ in handleURLs(urls) } isTargeted: { isTargeted = $0 }
+
+            Button { chooseFile() } label: { Label("Choose File…", systemImage: "doc") }
+
+            Text("Imports every otpauth:// link in the file. Read locally on your Mac — nothing is uploaded.")
+                .font(.caption).foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private func handleURLs(_ urls: [URL]) -> Bool {
+        guard let url = urls.first else { return false }
+        return importFile(at: url)
+    }
+
+    private func chooseFile() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.plainText, .text, .utf8PlainText, .json, .data]
+        panel.allowsMultipleSelection = false
+        if panel.runModal() == .OK, let url = panel.url { importFile(at: url) }
+    }
+
+    @discardableResult
+    private func importFile(at url: URL) -> Bool {
+        guard let text = try? String(contentsOf: url, encoding: .utf8) else {
+            onError("Couldn't read that file as text."); return false
+        }
+        let result = OTPAuthURI.parseMany(from: text)
+        guard !result.parsed.isEmpty else {
+            onError("No otpauth:// links were found in that file."); return false
+        }
+        onParsed(result.parsed)
+        return true
     }
 }

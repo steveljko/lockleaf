@@ -89,6 +89,25 @@ public struct OTPAuthURI: Sendable, Equatable {
         self.parameters = params
     }
 
+    /// Scan free-form text for every `otpauth://` link and parse each one.
+    /// Tolerates one-per-line files, space-separated tokens, and surrounding
+    /// noise (comment lines, blank lines) — anything that isn't an `otpauth://`
+    /// token is ignored. `failures` counts tokens that looked like links but
+    /// could not be parsed, so callers can report partial imports.
+    public static func parseMany(from text: String) -> (parsed: [OTPAuthURI], failures: Int) {
+        let tokens = text.split(whereSeparator: { $0.isWhitespace || $0.isNewline })
+        var parsed: [OTPAuthURI] = []
+        var failures = 0
+        for token in tokens where token.lowercased().hasPrefix("otpauth://") {
+            if let uri = try? OTPAuthURI(string: String(token)) {
+                parsed.append(uri)
+            } else {
+                failures += 1
+            }
+        }
+        return (parsed, failures)
+    }
+
     /// Serialize back to a canonical `otpauth://` URI (used for QR generation).
     public func uriString() -> String {
         var components = URLComponents()

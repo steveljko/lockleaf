@@ -120,4 +120,27 @@ struct OTPAuthURITests {
         #expect(throws: AppError.self) { try OTPAuthURI(string: "https://example.com") }
         #expect(throws: AppError.self) { try OTPAuthURI(string: "otpauth://totp/x?issuer=y") }
     }
+
+    @Test("parseMany extracts every link and ignores surrounding noise")
+    func parseManyMixed() {
+        let text = """
+        # exported accounts
+        otpauth://totp/GitHub:alice?secret=JBSWY3DPEHPK3PXP&issuer=GitHub
+
+        otpauth://totp/GitLab:bob?secret=JBSWY3DPEHPK3PXP&issuer=GitLab
+        not-a-link
+        otpauth://totp/Broken?issuer=nope
+        """
+        let result = OTPAuthURI.parseMany(from: text)
+        #expect(result.parsed.count == 2)
+        #expect(result.failures == 1) // the missing-secret otpauth token
+        #expect(result.parsed.map(\.issuer) == ["GitHub", "GitLab"])
+    }
+
+    @Test("parseMany on text with no links is empty")
+    func parseManyEmpty() {
+        let result = OTPAuthURI.parseMany(from: "just some notes\nno links here")
+        #expect(result.parsed.isEmpty)
+        #expect(result.failures == 0)
+    }
 }
