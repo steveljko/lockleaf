@@ -82,7 +82,7 @@ final class ImageStore: Sendable {
     private init() {
         let support = (try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true))
             ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        directory = support.appendingPathComponent("TwoFactor/Avatars", isDirectory: true)
+        directory = support.appendingPathComponent("Lockleaf/Avatars", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     }
 

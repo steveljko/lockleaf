@@ -16,11 +16,11 @@ file references for auditing.
 | Secure memory wipe | ✅ | `CoreModels/SecretBytes.swift` |
 | Clipboard auto-clear | ✅ | `VaultKit/ClipboardManager.swift` |
 | Secure clipboard mode | ✅ | Concealed/transient pasteboard types |
-| No analytics / telemetry / tracking | ✅ | No network entitlement (`Resources/TwoFactor.entitlements`); no analytics SDKs |
+| No analytics / telemetry / tracking | ✅ | No network entitlement (`Resources/Lockleaf.entitlements`); no analytics SDKs |
 
 ## Keychain configuration
 
-- Class: `kSecClassGenericPassword`, fixed service `app.twofactor.secrets`.
+- Class: `kSecClassGenericPassword`, fixed service `app.lockleaf.secrets`.
 - Accessibility: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
   → not in iCloud Keychain, not restorable to another device, readable only
   while the Mac is unlocked.

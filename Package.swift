@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "TwoFactor",
+    name: "Lockleaf",
     platforms: [
         .macOS(.v15)
     ],
@@ -14,7 +14,7 @@ let package = Package(
         .library(name: "VaultKit", targets: ["VaultKit"]),
         .library(name: "BackupKit", targets: ["BackupKit"]),
         .library(name: "DomainServices", targets: ["DomainServices"]),
-        .executable(name: "TwoFactor", targets: ["TwoFactorApp"]),
+        .executable(name: "Lockleaf", targets: ["LockleafApp"]),
     ],
     targets: [
         // MARK: - Domain entities and value types (no platform dependencies)
@@ -70,7 +70,7 @@ let package = Package(
 
         // MARK: - SwiftUI application
         .executableTarget(
-            name: "TwoFactorApp",
+            name: "LockleafApp",
             dependencies: ["DomainServices"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),

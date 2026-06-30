@@ -14,7 +14,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ TwoFactorApp (SwiftUI)                                        │  Presentation
+│ LockleafApp (SwiftUI)                                         │  Presentation
 │   App/  DesignSystem/  Lock/  Main/  Detail/  Editor/         │
 │   Settings/  MenuBar/  QR/  Onboarding/                       │
 ├─────────────────────────────────────────────────────────────┤
@@ -79,7 +79,7 @@ encrypted on disk), PBKDF2-HMAC-SHA256 (600k iterations) → AES-256-GCM envelop
 - **`SettingsStore`**, **`BackupCoordinator`**, **`FuzzyMatcher`**, **`Clock`**.
 - **`AppEnvironment`**: the composition root; `.live()` vs `.preview()`.
 
-### TwoFactorApp
+### LockleafApp
 SwiftUI scenes: main `WindowGroup` (three-column `NavigationSplitView`),
 `Settings`, and a `MenuBarExtra`. `AppModel` holds selection/search/error state
 and the `LockCoordinator` (system-event → lock policy). `CodeClock` is one shared

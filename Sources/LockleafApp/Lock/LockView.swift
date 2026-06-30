@@ -50,10 +50,10 @@ struct LockView: View {
 
     private var prompt: String {
         switch vault.biometryKind {
-        case .touchID: "Use Touch ID to unlock your 2FA vault."
-        case .faceID: "Use Face ID to unlock your 2FA vault."
-        case .opticID: "Use Optic ID to unlock your 2FA vault."
-        case .none: "Authenticate to unlock your 2FA vault."
+        case .touchID: "Use Touch ID to unlock your Lockleaf vault."
+        case .faceID: "Use Face ID to unlock your Lockleaf vault."
+        case .opticID: "Use Optic ID to unlock your Lockleaf vault."
+        case .none: "Authenticate to unlock your Lockleaf vault."
         }
     }
 

@@ -8,9 +8,9 @@ set -euo pipefail
 
 CONFIG="${1:-release}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP_NAME="2FA"
-EXECUTABLE="TwoFactor"
-BUNDLE_ID="app.twofactor.mac"
+APP_NAME="Lockleaf"
+EXECUTABLE="Lockleaf"
+BUNDLE_ID="app.lockleaf.mac"
 
 BUILD_DIR="$ROOT/.build/$CONFIG"
 APP_DIR="$ROOT/build/$APP_NAME.app"
@@ -35,7 +35,7 @@ done
 echo "▶︎ Code signing (ad-hoc) with entitlements…"
 codesign --force --deep \
     --sign - \
-    --entitlements "$ROOT/Resources/TwoFactor.entitlements" \
+    --entitlements "$ROOT/Resources/Lockleaf.entitlements" \
     --options runtime \
     "$APP_DIR"
 

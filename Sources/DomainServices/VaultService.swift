@@ -39,7 +39,7 @@ public final class VaultService {
     public var canAuthenticate: Bool { authenticator.canAuthenticate }
 
     /// Present the native authentication dialog and, on success, unlock.
-    public func unlock(reason: String = "Unlock your 2FA vault") async {
+    public func unlock(reason: String = "Unlock your Lockleaf vault") async {
         guard state != .unlocked else { return }
         state = .unlocking
         do {

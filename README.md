@@ -1,6 +1,7 @@
-# 2FA — Secure TOTP for macOS
+# Lockleaf — Secure TOTP for macOS
 
-A native, security-first macOS app for storing and generating TOTP (2FA) codes.
+Lockleaf is a native, security-first macOS app for storing and generating TOTP
+(2FA) codes.
 Secrets live only in the **Apple Keychain**; SQLite holds non-secret metadata.
 The vault unlocks with **Touch ID** (or Apple Watch / account password) via the
 `LocalAuthentication` framework. No analytics, no telemetry, no network access.
@@ -24,7 +25,10 @@ swift test
 
 # Build a runnable, ad-hoc-signed .app bundle (no Xcode project needed)
 ./Scripts/build_app.sh release
-open ./build/2FA.app
+open ./build/Lockleaf.app
+
+# Package the .app into a drag-to-Applications .dmg installer
+./Scripts/make_dmg.sh            # → build/Lockleaf-<version>.dmg
 ```
 
 The `build_app.sh` script compiles the SwiftPM executable, wraps it in a
@@ -43,10 +47,11 @@ Sources/
   VaultKit/                 LocalAuthentication authenticator, clipboard manager
   BackupKit/                Encrypted backup (PBKDF2 + AES-GCM) and plain JSON
   DomainServices/           Use cases: VaultService, Library, Settings, DI container
-  TwoFactorApp/             SwiftUI application (App, DesignSystem, views, QR)
+  LockleafApp/              SwiftUI application (App, DesignSystem, views, QR)
 Tests/                      One test target per logic module
 Resources/                  Info.plist, entitlements (icon optional)
 Scripts/build_app.sh        Bundle + sign the .app
+Scripts/make_dmg.sh         Package the .app into a .dmg installer
 docs/                       Architecture, threat model, security review, plan
 ```
 
@@ -55,7 +60,7 @@ docs/                       Architecture, threat model, security review, plan
 ```
 CoreModels  ←  TOTPCore, KeychainStore, Persistence, VaultKit
 CoreModels, TOTPCore  ←  BackupKit
-(all of the above)    ←  DomainServices  ←  TwoFactorApp (SwiftUI)
+(all of the above)    ←  DomainServices  ←  LockleafApp (SwiftUI)
 ```
 
 Dependencies point inward only; the UI knows the domain, the domain never
@@ -84,10 +89,46 @@ For App Store or Developer ID distribution:
 1. Create a macOS App target in Xcode and add this package as a local dependency
    (or drag the `Sources/*` modules in as a workspace).
 2. Set the target's Info.plist and entitlements to `Resources/Info.plist` and
-   `Resources/TwoFactor.entitlements`.
+   `Resources/Lockleaf.entitlements`.
 3. Set your Team / Developer ID signing identity, enable Hardened Runtime.
 4. Archive → notarize. The same `DomainServices` and library code is reused
    unchanged; only packaging differs.
+
+## Continuous Integration & Releases
+
+Two GitHub Actions workflows (in `.github/workflows/`):
+
+- **`ci.yml`** — builds and runs the full test suite on every push to `main`
+  and on pull requests (`macos-15`, latest stable Xcode).
+- **`release.yml`** — on pushing a version tag, builds the signed `.app`, stamps
+  it with the tag's version (`CFBundleShortVersionString`) and the run number
+  (`CFBundleVersion`), builds a drag-to-Applications **`.dmg` installer**
+  (`Scripts/make_dmg.sh`, native `hdiutil`), also zips the bare `.app`, and
+  publishes a GitHub Release with both artifacts attached.
+
+Cut a release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0        # → Actions builds & publishes the release
+```
+
+(Or run the **Release** workflow manually from the Actions tab and pass the
+version.) First-time setup, if this isn't a git repo yet:
+
+```bash
+git init && git add . && git commit -m "Initial commit"
+git branch -M main
+git remote add origin git@github.com:<you>/<repo>.git
+git push -u origin main
+```
+
+The released `.app` is **ad-hoc signed, not notarized** (CI has no Developer ID
+by default), so Gatekeeper will warn on first launch — the release notes tell
+users to right-click → Open. To produce a notarized artifact in CI, add your
+Developer ID certificate and an App Store Connect API key as repository secrets,
+import the cert into a temporary keychain, sign with `--sign "Developer ID
+Application: …"`, and run `xcrun notarytool submit … --wait` before zipping.
 
 ## What's implemented vs. designed-for
 

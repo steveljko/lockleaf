@@ -74,7 +74,7 @@ struct BackupSettingsTab: View {
     private func runExportEncrypted(password: String) {
         do {
             let data = try environment.backups.exportEncrypted(password: password)
-            try save(data, suggestedName: "TwoFactor-Backup.2fabackup")
+            try save(data, suggestedName: "Lockleaf-Backup.lockleafbackup")
             message = "Encrypted backup saved."
         } catch { message = (error as? AppError)?.userMessage ?? error.localizedDescription }
     }
@@ -82,7 +82,7 @@ struct BackupSettingsTab: View {
     private func runExportPlain() {
         do {
             let data = try environment.backups.exportPlain()
-            try save(data, suggestedName: "TwoFactor-Backup.json")
+            try save(data, suggestedName: "Lockleaf-Backup.json")
             message = "Unencrypted backup saved."
         } catch { message = (error as? AppError)?.userMessage ?? error.localizedDescription }
     }
@@ -90,7 +90,7 @@ struct BackupSettingsTab: View {
     private func importBackup() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
-        panel.allowedContentTypes = [.json, UTType(filenameExtension: "2fabackup") ?? .data, .data]
+        panel.allowedContentTypes = [.json, UTType(filenameExtension: "lockleafbackup") ?? .data, .data]
         guard panel.runModal() == .OK, let url = panel.url, let data = try? Data(contentsOf: url) else { return }
         if environment.backups.isEncrypted(data) {
             passwordSheet = .importFile(data)

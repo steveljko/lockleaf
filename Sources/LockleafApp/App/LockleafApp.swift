@@ -2,7 +2,7 @@ import DomainServices
 import SwiftUI
 
 @main
-struct TwoFactorApp: App {
+struct LockleafApp: App {
     @State private var model: AppModel
     @State private var environment: AppEnvironment
 
@@ -40,7 +40,7 @@ struct TwoFactorApp: App {
                 .preferredColorScheme(model.settings.settings.theme.colorScheme)
         }
 
-        MenuBarExtra("2FA", systemImage: "lock.shield") {
+        MenuBarExtra("Lockleaf", systemImage: "lock.shield") {
             MenuBarView()
                 .environment(model)
                 .environment(model.vault)

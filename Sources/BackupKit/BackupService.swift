@@ -6,7 +6,7 @@ import Foundation
 /// and the AES-GCM ciphertext are stored; the plaintext `BackupDocument` is
 /// recoverable only with the user's password.
 public struct EncryptedBackupEnvelope: Codable, Sendable, Equatable {
-    public var format: String          // "twofactor.encrypted-backup"
+    public var format: String          // "lockleaf.encrypted-backup"
     public var version: Int            // envelope schema version
     public var kdf: String             // "pbkdf2-hmac-sha256"
     public var iterations: Int
@@ -19,7 +19,7 @@ public struct EncryptedBackupEnvelope: Codable, Sendable, Equatable {
 public struct BackupService: Sendable {
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
-    public static let encryptedFormat = "twofactor.encrypted-backup"
+    public static let encryptedFormat = "lockleaf.encrypted-backup"
 
     public init() {
         // Default date strategy (reference-date Double) is used so timestamps

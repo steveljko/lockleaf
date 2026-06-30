@@ -27,7 +27,7 @@ struct MenuBarView: View {
     private var header: some View {
         HStack {
             Image(systemName: "lock.shield.fill").foregroundStyle(.tint)
-            Text("2FA").font(.headline)
+            Text("Lockleaf").font(.headline)
             Spacer()
             if vault.isLocked {
                 Button("Unlock") { Task { await model.unlock() } }

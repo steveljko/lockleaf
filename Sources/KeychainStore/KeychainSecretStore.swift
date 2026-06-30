@@ -16,7 +16,7 @@ public struct KeychainSecretStore: SecretStore {
     private let requireUserPresence: Bool
 
     public init(
-        service: String = "app.twofactor.secrets",
+        service: String = "app.lockleaf.secrets",
         accessGroup: String? = nil,
         requireUserPresence: Bool = false
     ) {

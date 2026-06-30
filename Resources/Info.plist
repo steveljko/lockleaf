@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>2FA</string>
+    <string>Lockleaf</string>
     <key>CFBundleDisplayName</key>
-    <string>2FA</string>
+    <string>Lockleaf</string>
     <key>CFBundleIdentifier</key>
-    <string>app.twofactor.mac</string>
+    <string>app.lockleaf.mac</string>
     <key>CFBundleExecutable</key>
-    <string>TwoFactor</string>
+    <string>Lockleaf</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -24,7 +24,7 @@
     <true/>
     <!-- Shown in the native biometric prompt. Touch ID on Mac surfaces this. -->
     <key>NSFaceIDUsageDescription</key>
-    <string>Unlock your 2FA vault with biometrics.</string>
+    <string>Unlock your Lockleaf vault with biometrics.</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.utilities</string>
 </dict>

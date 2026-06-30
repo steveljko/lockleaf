@@ -90,7 +90,7 @@ private struct AboutTab: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "lock.shield.fill").font(.system(size: 56)).foregroundStyle(.tint)
-            Text("2FA").font(.title.bold())
+            Text("Lockleaf").font(.title.bold())
             Text("Secure TOTP for macOS").foregroundStyle(.secondary)
             Text("Secrets are stored in the Apple Keychain and never leave your Mac. No analytics, no telemetry, no tracking.")
                 .font(.callout).foregroundStyle(.secondary)

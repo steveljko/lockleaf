@@ -73,7 +73,7 @@ public final class AppEnvironment {
             for: .applicationSupportDirectory, in: .userDomainMask,
             appropriateFor: nil, create: true
         )
-        let directory = support.appendingPathComponent("TwoFactor", isDirectory: true)
+        let directory = support.appendingPathComponent("Lockleaf", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory.appendingPathComponent("metadata.sqlite")
     }
