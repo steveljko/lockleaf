@@ -15,6 +15,12 @@ public final class Library {
     public private(set) var tags: [Tag] = []
     public private(set) var recentEntryIDs: [EntryID] = []
 
+    /// Monotonic counter bumped whenever backup-relevant content (entries,
+    /// groups, tags) changes. Gives observers like `BackupManager` a single,
+    /// cheap signal to react to without diffing the collections themselves.
+    /// Plain usage tracking does not bump it.
+    public private(set) var revision = 0
+
     private let store: MetadataStore
     private let vault: VaultService
     private let dateProvider: DateProvider
@@ -103,6 +109,7 @@ public final class Library {
     public func delete(_ entry: Entry) {
         try? vault.deleteSecret(for: entry.secretRef)
         entries.removeAll { $0.id == entry.id }
+        revision += 1
         Task { [store] in try? await store.deleteEntry(entry.id) }
     }
 
@@ -132,6 +139,7 @@ public final class Library {
             parentID: parentID, sortOrder: groups.count
         )
         groups.append(group)
+        revision += 1
         Task { [store] in try? await store.upsert(group) }
         return group
     }
@@ -142,6 +150,7 @@ public final class Library {
         if let index = groups.firstIndex(where: { $0.id == updated.id }) {
             groups[index] = updated
         }
+        revision += 1
         Task { [store] in try? await store.upsert(updated) }
     }
 
@@ -152,6 +161,7 @@ public final class Library {
         for index in entries.indices where entries[index].groupID == group.id {
             entries[index].groupID = nil
         }
+        revision += 1
         Task { [store] in try? await store.deleteGroup(group.id) }
     }
 
@@ -163,6 +173,7 @@ public final class Library {
             Task { [store] in try? await store.upsert(copy) }
         }
         groups.sort { $0.sortOrder < $1.sortOrder }
+        revision += 1
     }
 
     // MARK: - Tags
@@ -171,6 +182,7 @@ public final class Library {
     public func addTag(name: String, color: AccentColor) -> Tag {
         let tag = Tag(name: name, color: color)
         tags.append(tag)
+        revision += 1
         Task { [store] in try? await store.upsert(tag) }
         return tag
     }
@@ -180,6 +192,7 @@ public final class Library {
         for index in entries.indices {
             entries[index].tagIDs.removeAll { $0 == tag.id }
         }
+        revision += 1
         Task { [store] in try? await store.deleteTag(tag.id) }
     }
 
@@ -188,12 +201,14 @@ public final class Library {
     public func adoptGroup(_ group: Group) {
         if let index = groups.firstIndex(where: { $0.id == group.id }) { groups[index] = group }
         else { groups.append(group) }
+        revision += 1
         Task { [store] in try? await store.upsert(group) }
     }
 
     public func adoptTag(_ tag: Tag) {
         if let index = tags.firstIndex(where: { $0.id == tag.id }) { tags[index] = tag }
         else { tags.append(tag) }
+        revision += 1
         Task { [store] in try? await store.upsert(tag) }
     }
 
@@ -239,6 +254,7 @@ public final class Library {
     // MARK: - Private
 
     private func persist(_ entry: Entry) {
+        revision += 1
         Task { [store] in try? await store.upsert(entry) }
     }
 }

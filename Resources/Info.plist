@@ -27,5 +27,19 @@
     <string>Unlock your Lockleaf vault with biometrics.</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.utilities</string>
+    <!-- Registers the app's iCloud Drive container so encrypted backups appear
+         under the app's name in the user's iCloud Drive. -->
+    <key>NSUbiquitousContainers</key>
+    <dict>
+        <key>iCloud.app.lockleaf.mac</key>
+        <dict>
+            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
+            <true/>
+            <key>NSUbiquitousContainerName</key>
+            <string>Lockleaf</string>
+            <key>NSUbiquitousContainerSupportedFolderLevels</key>
+            <string>One</string>
+        </dict>
+    </dict>
 </dict>
 </plist>

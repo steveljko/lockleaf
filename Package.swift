@@ -80,6 +80,6 @@ let package = Package(
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence"]),
         .testTarget(name: "BackupKitTests", dependencies: ["BackupKit"]),
         .testTarget(name: "KeychainStoreTests", dependencies: ["KeychainStore"]),
-        .testTarget(name: "DomainServicesTests", dependencies: ["DomainServices"]),
+        .testTarget(name: "DomainServicesTests", dependencies: ["DomainServices", "BackupKit"]),
     ]
 )

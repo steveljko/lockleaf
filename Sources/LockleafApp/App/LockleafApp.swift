@@ -36,6 +36,8 @@ struct LockleafApp: App {
                 .environment(model)
                 .environment(model.vault)
                 .environment(model.settings)
+                .environment(model.library)
+                .environment(environment.backupManager)
                 .environment(environment)
                 .preferredColorScheme(model.settings.settings.theme.colorScheme)
         }

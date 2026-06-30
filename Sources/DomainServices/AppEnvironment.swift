@@ -16,18 +16,27 @@ public final class AppEnvironment {
     public let library: Library
     public let clipboard: ClipboardManager
     public let backups: BackupCoordinator
+    public let backupManager: BackupManager
 
     private init(
         settingsStore: SettingsStore,
         vault: VaultService,
         library: Library,
-        clipboard: ClipboardManager
+        clipboard: ClipboardManager,
+        secretStore: SecretStore
     ) {
         self.settingsStore = settingsStore
         self.vault = vault
         self.library = library
         self.clipboard = clipboard
-        self.backups = BackupCoordinator(library: library, vault: vault)
+        let backups = BackupCoordinator(library: library, vault: vault, secretStore: secretStore)
+        self.backups = backups
+        self.backupManager = BackupManager(
+            library: library,
+            vault: vault,
+            settings: settingsStore,
+            coordinator: backups
+        )
     }
 
     /// Production environment: SQLite on disk + Keychain-backed secrets +
@@ -58,7 +67,8 @@ public final class AppEnvironment {
             settingsStore: SettingsStore(store: store),
             vault: vault,
             library: library,
-            clipboard: ClipboardManager()
+            clipboard: ClipboardManager(),
+            secretStore: secretStore
         )
     }
 
@@ -66,6 +76,7 @@ public final class AppEnvironment {
     public func bootstrap() async {
         await settingsStore.load()
         await library.load()
+        backupManager.start()
     }
 
     private static func databaseURL() throws -> URL {

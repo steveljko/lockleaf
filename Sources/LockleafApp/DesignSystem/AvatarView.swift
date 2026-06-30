@@ -75,9 +75,20 @@ struct AvatarView: View {
 
 /// Stores user-uploaded avatar images under Application Support so the database
 /// holds only a file name.
+///
+/// Avatars are never shown larger than ~56pt, so images are downscaled to a small
+/// bounded size on save (capping disk and decoded-bitmap cost) and the decoded
+/// `NSImage`s are cached in memory so the many places that render the same avatar
+/// — sidebar, list, detail — don't each re-decode the file on every redraw.
 final class ImageStore: Sendable {
     static let shared = ImageStore()
     private let directory: URL
+    /// Decoded, already-downscaled avatars keyed by file name. `NSCache` evicts
+    /// under memory pressure on its own.
+    nonisolated(unsafe) private let cache = NSCache<NSString, NSImage>()
+
+    /// Longest edge we keep, in pixels. Covers the 56pt preview at 2x with headroom.
+    private static let maxDimension: CGFloat = 256
 
     private init() {
         let support = (try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true))
@@ -87,17 +98,49 @@ final class ImageStore: Sendable {
     }
 
     func load(_ fileName: String) -> NSImage? {
-        NSImage(contentsOf: directory.appendingPathComponent(fileName))
+        let key = fileName as NSString
+        if let cached = cache.object(forKey: key) { return cached }
+        guard let image = NSImage(contentsOf: directory.appendingPathComponent(fileName)) else { return nil }
+        cache.setObject(image, forKey: key)
+        return image
     }
 
     @discardableResult
     func save(_ image: NSImage) -> String? {
         let name = UUID().uuidString + ".png"
-        guard let tiff = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiff),
-              let png = bitmap.representation(using: .png, properties: [:])
-        else { return nil }
+        guard let png = Self.downscaledPNG(image) else { return nil }
         try? png.write(to: directory.appendingPathComponent(name))
+        cache.setObject(NSImage(data: png) ?? image, forKey: name as NSString)
         return name
+    }
+
+    /// Renders `image` into a bitmap no larger than ``maxDimension`` on its longest
+    /// edge (never upscaling) and encodes it as PNG.
+    private static func downscaledPNG(_ image: NSImage) -> Data? {
+        let pixelSize = image.representations.reduce(CGSize.zero) { acc, rep in
+            CGSize(width: max(acc.width, CGFloat(rep.pixelsWide)),
+                   height: max(acc.height, CGFloat(rep.pixelsHigh)))
+        }
+        let source = pixelSize.width > 0 ? pixelSize : image.size
+        guard source.width > 0, source.height > 0 else { return nil }
+
+        let scale = min(1, maxDimension / max(source.width, source.height))
+        let target = CGSize(width: round(source.width * scale), height: round(source.height * scale))
+
+        guard let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: Int(target.width), pixelsHigh: Int(target.height),
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ) else { return nil }
+        bitmap.size = target
+
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
+        image.draw(in: NSRect(origin: .zero, size: target),
+                   from: .zero, operation: .copy, fraction: 1)
+        NSGraphicsContext.restoreGraphicsState()
+
+        return bitmap.representation(using: .png, properties: [:])
     }
 }

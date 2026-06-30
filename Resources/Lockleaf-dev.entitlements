@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Entitlements for LOCAL, ad-hoc–signed builds (Scripts/build_app.sh).
+         iCloud container entitlements are deliberately omitted here: they are
+         "restricted" and macOS refuses to launch an ad-hoc binary that claims
+         them without a provisioning profile (RBSRequestErrorDomain Code=5 /
+         POSIX 163, "Launchd job spawn failed"). The full set lives in
+         Lockleaf.entitlements and is used by the provisioned Xcode/Developer-ID
+         build, where iCloud backup actually works. -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+</dict>
+</plist>

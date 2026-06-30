@@ -32,10 +32,14 @@ for bundle in "$BUILD_DIR"/*.bundle; do
     [ -e "$bundle" ] && cp -R "$bundle" "$CONTENTS/Resources/"
 done
 
-echo "▶︎ Code signing (ad-hoc) with entitlements…"
+# Ad-hoc signing cannot authorize restricted iCloud entitlements, and macOS will
+# refuse to launch a binary that claims them without a provisioning profile. Use
+# the iCloud-free dev entitlements here; the full set (Lockleaf.entitlements) is
+# for the provisioned Xcode/Developer-ID build.
+echo "▶︎ Code signing (ad-hoc) with dev entitlements (no iCloud)…"
 codesign --force --deep \
     --sign - \
-    --entitlements "$ROOT/Resources/Lockleaf.entitlements" \
+    --entitlements "$ROOT/Resources/Lockleaf-dev.entitlements" \
     --options runtime \
     "$APP_DIR"
 

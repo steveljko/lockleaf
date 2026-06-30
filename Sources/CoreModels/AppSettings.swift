@@ -39,6 +39,12 @@ public struct AppSettings: Codable, Sendable, Equatable {
     public var menuBarMode: Bool
     public var showInDock: Bool
 
+    // Backup
+    /// When on, the app keeps an encrypted backup in the user's iCloud Drive and
+    /// refreshes it automatically after changes. Requires a backup password
+    /// (held in the Keychain, not here).
+    public var iCloudBackupEnabled: Bool
+
     public init(
         theme: AppTheme = .system,
         launchAtLogin: Bool = false,
@@ -51,7 +57,8 @@ public struct AppSettings: Codable, Sendable, Equatable {
         secureClipboard: Bool = true,
         defaultGroupID: GroupID? = nil,
         menuBarMode: Bool = true,
-        showInDock: Bool = true
+        showInDock: Bool = true,
+        iCloudBackupEnabled: Bool = false
     ) {
         self.theme = theme
         self.launchAtLogin = launchAtLogin
@@ -65,7 +72,33 @@ public struct AppSettings: Codable, Sendable, Equatable {
         self.defaultGroupID = defaultGroupID
         self.menuBarMode = menuBarMode
         self.showInDock = showInDock
+        self.iCloudBackupEnabled = iCloudBackupEnabled
     }
 
     public static let `default` = AppSettings()
+
+    // Tolerant decoding: a settings blob written by an older build won't contain
+    // keys added later (e.g. `iCloudBackupEnabled`). Decoding each key
+    // independently with a fallback to the default means a new field never wipes
+    // the user's existing preferences.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = AppSettings.default
+        func value<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
+            ((try? c.decodeIfPresent(T.self, forKey: key)) ?? nil) ?? fallback
+        }
+        theme = value(.theme, d.theme)
+        launchAtLogin = value(.launchAtLogin, d.launchAtLogin)
+        unlockMethod = value(.unlockMethod, d.unlockMethod)
+        autoLockSeconds = value(.autoLockSeconds, d.autoLockSeconds)
+        lockOnSleep = value(.lockOnSleep, d.lockOnSleep)
+        lockOnScreenLock = value(.lockOnScreenLock, d.lockOnScreenLock)
+        lockWhenAppLosesFocus = value(.lockWhenAppLosesFocus, d.lockWhenAppLosesFocus)
+        clipboardClearSeconds = value(.clipboardClearSeconds, d.clipboardClearSeconds)
+        secureClipboard = value(.secureClipboard, d.secureClipboard)
+        defaultGroupID = (try? c.decodeIfPresent(GroupID.self, forKey: .defaultGroupID)) ?? d.defaultGroupID
+        menuBarMode = value(.menuBarMode, d.menuBarMode)
+        showInDock = value(.showInDock, d.showInDock)
+        iCloudBackupEnabled = value(.iCloudBackupEnabled, d.iCloudBackupEnabled)
+    }
 }

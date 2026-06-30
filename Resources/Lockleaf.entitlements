@@ -2,12 +2,34 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <!-- PRODUCTION entitlements for the provisioned Xcode / Developer-ID build.
+         Includes restricted iCloud entitlements, so this set must be paired with
+         a matching provisioning profile. Local ad-hoc builds use
+         Lockleaf-dev.entitlements (no iCloud) instead — see Scripts/build_app.sh. -->
     <!-- App Sandbox: confines the app and gives it a private Keychain group. -->
     <key>com.apple.security.app-sandbox</key>
     <true/>
     <!-- Needed for the open/save panels used by backup import/export. -->
     <key>com.apple.security.files.user-selected.read-write</key>
     <true/>
-    <!-- No network entitlement on purpose: the app makes no network calls. -->
+    <!-- iCloud Drive: stores ONLY the AES-256-GCM–encrypted backup envelope in
+         the app's container so it syncs across the user's Macs. Plaintext
+         secrets never leave the Keychain. Requires a provisioning profile from a
+         paid Apple Developer account; ad-hoc builds will not get the grant and
+         the feature degrades to "iCloud unavailable" at runtime. -->
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+        <string>iCloud.app.lockleaf.mac</string>
+    </array>
+    <key>com.apple.developer.ubiquity-container-identifiers</key>
+    <array>
+        <string>iCloud.app.lockleaf.mac</string>
+    </array>
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+        <string>CloudDocuments</string>
+    </array>
+    <!-- No general network entitlement: the app still makes no network calls of
+         its own; iCloud sync is handled out-of-process by the system. -->
 </dict>
 </plist>
